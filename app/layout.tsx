@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono ,Roboto} from "next/font/google";
 import "./globals.css";
-
+import Header from "./components/Header";
+const roboto = Roboto({
+  weight: ['400', '700'], // Specify the weights you need
+  subsets: ['latin'],    // Specify the subsets you need
+  display: 'swap',       // Ensures the fallback font is used while roboto loads
+});
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -23,10 +28,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={roboto.className}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={roboto.className}
       >
+        <Header></Header>
         {children}
       </body>
     </html>

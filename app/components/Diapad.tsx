@@ -9,6 +9,7 @@ import { Underdog } from "next/font/google";
 import { PlusOutlined } from "@ant-design/icons";
 import { Space } from "antd";
 import Link from "next/link";
+import axios from "axios";
 // import { Delete, Phone, UserPlus, Globe, ChevronDown } from 'lucide-react'; // Dùng lucide-react cho icon
 type User = {
   name: string;
@@ -31,6 +32,29 @@ export default function DialPad() {
   // Khởi tạo Twilio Device
 
   useEffect(() => {
+    const init = async () => {
+      const res = await axios.get("http://localhost:3001/token");
+
+      const newDevice = new Device(res.data.token);
+
+      // newDevice.on("ready", () => console.log("Device Ready"));
+      // newDevice.on("error", (err) => console.error(err));
+
+      // setDevice(newDevice);
+
+      newDevice.on("registered", () => {
+        console.log("Twilio Device Registered");
+        setStatus("ready");
+      });
+
+      newDevice.on("error", (error) => {
+        console.error("Twilio Error:", error.code, error.message);
+        setStatus("idle");
+      });
+
+      newDevice.register();
+      setDevice(newDevice);
+    };
     const initDevice = async () => {
       try {
         setStatus("registering");
@@ -59,7 +83,8 @@ export default function DialPad() {
       }
     };
     getUser();
-    initDevice();
+    init();
+    // initDevice();
 
     return () => {
       device?.destroy();
@@ -140,13 +165,13 @@ export default function DialPad() {
         <div className="flex">
           <div className="bg-[#243bff] text-white px-4 py-1 rounded-full text-xs font-semibold border border-[#4055ff]">
             <span className="mr-3">
-            <span className="mr-3">{user && user?.name}</span>
-            Balance: {user ? user?.balance : "200$"}
+              <span className="mr-3">{user && user?.name}</span>
+              Balance: {user ? user?.balance : "200$"}
             </span>
-            <Link href={'/billing'}>
-            <Space>
-            <PlusOutlined />
-            </Space>
+            <Link href={"/billing"}>
+              <Space>
+                <PlusOutlined />
+              </Space>
             </Link>
           </div>
         </div>

@@ -10,6 +10,14 @@ type Item = {
   Key: number;
   Label: string;
 };
+import { Great_Vibes } from "next/font/google";
+
+const greatVibes = Great_Vibes({
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+});
+
 export default function Header() {
   const items: Item[] = [
     {
@@ -21,7 +29,7 @@ export default function Header() {
     <div className="flex place-content-between h-15  items-center pl-5 pr-5 bg-[#ffffff] text-black backdrop-blur-md sticky top-0 z-50 font-bold">
       <div className="Logo w-1/2 flex gap-3 items-center">
         <Link href={"/"}>
-          <p className="text-4xl text-[#2031f8]">Neo Phone</p>
+          <p className={`text-4xl text-[#2031f8] ${greatVibes.className}`}>Neo Phone</p>
         </Link>
 
         <p className="">

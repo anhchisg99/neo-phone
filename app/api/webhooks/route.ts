@@ -37,16 +37,21 @@ const getLineItems = async ( checkout: any) => {
     limit: 10,
   });
   let quantity;
+  console.log('lineItem: ',lineItems);
+  let total = 0
   for (const item of lineItems.data) {
-    const unitAmount = item.price?.unit_amount; // cents
-    quantity = item.quantity;
-
+    const unitAmount = item.price?.unit_amount || 0 // cents
+    quantity = item.quantity || 0
+    let unitPerItem = unitAmount * quantity
+    total = total + unitPerItem
     console.log("unit_amount:", unitAmount);
     console.log("quantity:", quantity);
   }
-  return quantity;
+  return total
+
 };
 export async function POST(req: Request) {
+  console.log('active webhook');
   const sessionServer = await getServerSession(authConfig);
   console.log("session_test: ", sessionServer);
   const body = await req.text(); // Đọc body dưới dạng text thô
@@ -71,7 +76,9 @@ export async function POST(req: Request) {
       let checkoutId = session.id;
       const email = session.metadata?.userEmail as string;
       const per_item = await getLineItems( checkoutId) || 0;
+
       await saveToDb(per_item, email);
+
       console.log(
         "Thanh toán thành công cho:",
         session.customer_details?.email,
@@ -80,13 +87,20 @@ export async function POST(req: Request) {
       break;
 
     case "invoice.payment_failed":
+      console.log('invoice payment');
       // Xử lý khi thanh toán thất bại (ví dụ: gửi mail nhắc nhở)
       break;
     case "charge.updated":
+      console.log('invoice payment');
+
       break;
     case "charge.succeeded":
+      console.log('invoice payment');
+
       break;
     default:
+      console.log('invoice payment');
+
       console.log(`Sự kiện chưa được xử lý: ${event.type}`);
   }
 

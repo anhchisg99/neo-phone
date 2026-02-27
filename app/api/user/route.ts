@@ -6,6 +6,8 @@ import { authConfig } from "@/lib/auth"
 export async function GET() {
   const supabase = await createClient();
     const session = await getServerSession(authConfig)
+    console.log('testing: ',process.env.GOOGLE_CLIENT_ID);
+    console.log('testing: ',process.env.GOOGLE_CLIENT_SECRET);
   // Lấy user từ session cookie
     const {data: users} = await supabase.from("user_gmails").select("*").eq("mail",session?.user?.email)
     const user = users?.[0]

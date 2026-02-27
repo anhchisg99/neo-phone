@@ -99,12 +99,23 @@ export default function DialPad() {
   };
 
   const makeCall = async () => {
+    const data = await fetch('/api/balance',{
+      method:"POST",
+      body:JSON.stringify({userEmail:user?.mail})
+    })
+    const isEnoughMoney = await data.json()
+    if(!isEnoughMoney?.message){
+      console.log('not enough money');
+      
+      return
+
+    }
     console.log("make call !!!");
     if (device && phoneNumber) {
       const realPhone = country.code + phoneNumber;
       console.log("call in ", realPhone);
 
-      const params = { To: realPhone };
+      const params = { To: realPhone,userId:user?.mail ?? "" };
       const callInstance = await device.connect({ params });
       setCall(callInstance);
       setStatus("on-call");
@@ -166,7 +177,7 @@ export default function DialPad() {
           <div className="bg-[#243bff] text-white px-4 py-1 rounded-full text-xs font-semibold border border-[#4055ff]">
             <span className="mr-3">
               <span className="mr-3">{user && user?.name}</span>
-              Balance: {user ? user?.balance : "200$"}
+              Balance: {user ? Math.round((user?.balance)/100) : "200$"}
             </span>
             <Link href={"/billing"}>
               <Space>

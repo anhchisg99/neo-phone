@@ -14,6 +14,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
+import { transferMoney } from "@/lib/utils";
 
 export default function CheckoutPage({ amount }: { amount: number }) {
   const stripe = useStripe();
@@ -63,7 +64,8 @@ export default function CheckoutPage({ amount }: { amount: number }) {
       setErrorMessage(error.message);
     } else {
       //
-      await saveToDb(amount)
+      const newAmount = transferMoney(amount)
+      await saveToDb(newAmount)
     }
     setLoading(false);
   }

@@ -15,7 +15,7 @@ export async function GET() {
         await supabase.from("user_gmails").insert({
             mail:session?.user?.email,
             name: session?.user?.name,
-
+            balance:100
         })
     }
     

@@ -1,11 +1,8 @@
 "use client";
-import { createClient } from "@/lib/supabase/client";
-import { getServerSession } from "next-auth";
-import { authConfig } from "@/lib/auth";
+import { ToastContainer, toast } from "react-toastify";
 
 import { useState, useEffect } from "react";
 import { Device, Call } from "@twilio/voice-sdk";
-import { Underdog } from "next/font/google";
 import { PlusOutlined } from "@ant-design/icons";
 import { Space } from "antd";
 import Link from "next/link";
@@ -26,9 +23,10 @@ export default function DialPad() {
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [device, setDevice] = useState<Device | null>(null);
   const [activeCall, setActiveCall] = useState<Call | null>(null);
-  const [status, setStatus] = useState<
-    "idle" | "registering" | "ready" | "on-call"
-  >("idle");
+  // const [status, setStatus] = useState<
+  //   "idle" | "registering" | "ready" | "on-call"
+  // >("idle");
+  const [status,setStatus] = useState("")
   // Khởi tạo Twilio Device
 
   useEffect(() => {
@@ -99,26 +97,61 @@ export default function DialPad() {
   };
 
   const makeCall = async () => {
-    const data = await fetch('/api/balance',{
-      method:"POST",
-      body:JSON.stringify({userEmail:user?.mail})
-    })
-    const isEnoughMoney = await data.json()
-    if(!isEnoughMoney?.message){
-      console.log('not enough money');
-      
-      return
-
+    const data = await fetch("/api/balance", {
+      method: "POST",
+      body: JSON.stringify({ userEmail: user?.mail }),
+    });
+    const isEnoughMoney = await data.json();
+    if (!user) {
+      toast("please, sign in first");
+      return;
     }
-    console.log("make call !!!");
+
+    if (!isEnoughMoney?.message) {
+      toast("not enough money");
+      return;
+    }
+    if (!phoneNumber) {
+      toast("please, fill in phone number");
+      return;
+    }
     if (device && phoneNumber) {
       const realPhone = country.code + phoneNumber;
       console.log("call in ", realPhone);
 
-      const params = { To: realPhone,userId:user?.mail ?? "" };
+      const params = { To: realPhone, userId: user?.mail ?? "" };
       const callInstance = await device.connect({ params });
       setCall(callInstance);
       setStatus("on-call");
+
+      //
+      // 🔥 CALL CONNECTED
+      callInstance.on("accept", () => {
+        console.log("Call answered ✅");
+        // setCall(null)
+        setStatus("on-call");
+      });
+
+      // 🔥 CALL FAILED
+      callInstance.on("error", (error) => {
+        console.error("Call error ❌", error);
+        setStatus("failed");
+        setCall(null)
+        alert(error.message);
+      });
+
+      // 🔥 CALL ENDED
+      callInstance.on("disconnect", () => {
+        console.log("Call ended 📞");
+        setStatus("ended");
+        setCall(null)
+      });
+
+      // 🔥 RINGING EVENT
+      callInstance.on("ringing", () => {
+        console.log("Ringing...");
+        setStatus("ringing");
+      });
     }
   };
 
@@ -177,7 +210,7 @@ export default function DialPad() {
           <div className="bg-[#243bff] text-white px-4 py-1 rounded-full text-xs font-semibold border border-[#4055ff]">
             <span className="mr-3">
               <span className="mr-3">{user && user?.name}</span>
-              Balance: {user ? Math.round((user?.balance)/100) : "200$"}
+              Balance: {user ? Math.round(user?.balance / 100) : "200$"}
             </span>
             <Link href={"/billing"}>
               <Space>
@@ -239,7 +272,7 @@ export default function DialPad() {
           <button
             key={key.num}
             onClick={() => handleKeyPress(key.num)}
-            className="w-20 h-20 bg-[#2f46ff] rounded-full flex flex-col items-center justify-center text-white active:bg-[#3d52ff] active:scale-95 transition-all"
+            className="w-20 h-20 bg-[#2f46ff] rounded-full flex flex-col items-center justify-center text-white active:bg-[#3d52ff] active:scale-95 transition-all cursor-pointer"
           >
             <span className="text-3xl font-normal">{key.num}</span>
             <span className="text-[9px] text-gray-200 font-bold mt-0.5">
@@ -254,15 +287,25 @@ export default function DialPad() {
         <button className="text-gray-200 text-sm font-semibold hover:text-white">
           123
         </button>
-
-        <button
-          className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-[#1e35ff] active:scale-90 transition-transform"
-          onClick={makeCall}
-        >
-          <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
-            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
-          </svg>
-        </button>
+        {call ? (
+          <button
+            className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-red-300 active:scale-90 transition-transform cursor-pointer"
+            onClick={endCall}
+          >
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
+              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+            </svg>
+          </button>
+        ) : (
+          <button
+            className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-[#1e35ff] active:scale-90 transition-transform cursor-pointer"
+            onClick={makeCall}
+          >
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor">
+              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+            </svg>
+          </button>
+        )}
 
         <button
           onClick={() => setPhoneNumber(phoneNumber.slice(0, -1))}
@@ -271,6 +314,7 @@ export default function DialPad() {
           ⌫
         </button>
       </div>
+      <ToastContainer></ToastContainer>
     </div>
   );
 }

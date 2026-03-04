@@ -6,6 +6,8 @@ import DialPad from "./components/Diapad";
 import { createClient } from "@/lib/supabase/server";
 import { getServerSession } from "next-auth";
 import { authConfig } from "@/lib/auth";
+import Bottom from "./components/Bottom";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -18,6 +20,11 @@ export default function Home() {
         >
           <LeftContent />
           <DialPad />
+          {/* <Bottom></Bottom> */}
+        </div>
+        <div className="text-center">
+          <Link className="m-10" href={"/privacy"}>Privacy Policy</Link>
+          <Link href={"/term"}>Term</Link>
         </div>
       </div>
     </div>

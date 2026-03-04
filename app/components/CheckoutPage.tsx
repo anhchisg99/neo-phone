@@ -41,6 +41,7 @@ export default function CheckoutPage({ amount }: { amount: number }) {
     
   }
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    const return_url = process.env.NEXT_PUBLIC_NEXTAUTH_URL || ""
     event.preventDefault();
     setLoading(true);
     if (!stripe || !elements) {
@@ -57,7 +58,7 @@ export default function CheckoutPage({ amount }: { amount: number }) {
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `http://localhost:3000/`,
+        return_url: return_url ,
       },
     });
     if (error) {

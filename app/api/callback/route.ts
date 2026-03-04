@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 
 export async function GET() {
+  const redirect_url = process.env.NEXTAUTH_URL || ""
   const supabase = await createClient();
     const session = await getServerSession(authConfig)
   // Lấy user từ session cookie
@@ -21,5 +22,5 @@ export async function GET() {
     
   
 
-  return NextResponse.redirect("http://localhost:3000/");
+  return NextResponse.redirect(redirect_url);
 }

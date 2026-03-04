@@ -30,8 +30,9 @@ export default function DialPad() {
   // Khởi tạo Twilio Device
 
   useEffect(() => {
+    const backend_url = process.env.NEXT_PUBLIC_BACKEND_URL || ""
     const init = async () => {
-      const res = await axios.get("http://localhost:3001/token");
+      const res = await axios.get(`${backend_url}/token`);
 
       const newDevice = new Device(res.data.token);
 

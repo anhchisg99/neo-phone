@@ -3,9 +3,10 @@ import { Button } from "antd"
 import { signOut } from "next-auth/react";
 
 export default function ButtonSignOut(){
+    const return_url = process.env.NEXT_PUBLIC_NEXTAUTH_URL || ""
     return <div>
          <Button  style={{width:"200px",padding:"20px",borderRadius:"30px"}}
-          onClick={() => signOut({ callbackUrl: "http://localhost:3000" })}
+          onClick={() => signOut({ callbackUrl: return_url })}
         >
           sign out
         </Button>

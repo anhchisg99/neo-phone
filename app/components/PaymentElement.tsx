@@ -2,6 +2,7 @@ import { PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js"
 import { useState } from "react";
 
 export default function StripeForm() {
+  const return_url = process.env.NEXTAUTH_URL
   const stripe = useStripe();
   const elements = useElements();
   const [errorMessage, setErrorMessage] = useState('');
@@ -14,7 +15,7 @@ export default function StripeForm() {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: 'http://localhost:3000/success',
+        return_url: `${return_url}/success`,
       },
     });
 

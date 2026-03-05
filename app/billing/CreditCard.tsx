@@ -6,6 +6,11 @@ import { transferMoney } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { createClient } from "@/lib/supabase/client";
+import { getServerSession } from "next-auth";
+import { authConfig } from "@/lib/auth";
+
+import { toast } from "react-toastify";
 
 const amounts = [
   { value: 5 },
@@ -20,6 +25,47 @@ export default function CreditCard() {
   const [selected, setSelected] = useState<number>(20);
   const [custom, setCustom] = useState<string>("");
 
+  async function getUser(){
+    const supabase = await createClient();
+    const session = await getServerSession(authConfig);
+      const { data: user, error } = await supabase
+    .from("user_gmails")
+    .select()
+    .eq("mail", session?.user?.email)
+    .single();
+    if(error){
+      console.log('fail to get balance: ',error);      
+      toast("fail to get balance")
+      return null
+    }
+    return user
+
+  }
+  async function updateBalance() {
+    const user = await getUser()
+    if(!user){
+      return 
+
+    }
+    const old_balance = user?.balance
+    const new_balance = old_balance + transferMoney(selected)
+
+    const supabase = await createClient();
+    const session = await getServerSession(authConfig);
+    // Lấy user từ session cookie
+    const { error } = await supabase
+      .from("user_gmails")
+      .update({ balance: new_balance })
+      .eq("gmail", session?.user?.email);
+    if (error) {
+      console.log("fail to create");
+      toast("fail to create")
+      throw new Error("fail to insert");
+    } else {
+      toast("success!!")
+      console.log("success to create");
+    }
+  }
   return (
     <div className="w-[760px] bg-[#12221d] text-white rounded-3xl p-8 shadow-2xl border border-[#1f3a33]">
       {/* Header */}
@@ -122,7 +168,7 @@ export default function CreditCard() {
       </div>
 
       {/* Checkout */}
-      <Link 
+      <Link
         href={{
           pathname: "/checkout",
           query: {

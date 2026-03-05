@@ -14,6 +14,8 @@ type User = {
   balance: number;
 };
 export default function DialPad() {
+  const backend_url = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+
   const [user, setUser] = useState<User>();
   const [isDropOpen, setIsDropOpen] = useState(false);
   const [country, setCountry] = useState({ flag: "🇺🇸", code: "+1" });
@@ -26,11 +28,10 @@ export default function DialPad() {
   // const [status, setStatus] = useState<
   //   "idle" | "registering" | "ready" | "on-call"
   // >("idle");
-  const [status,setStatus] = useState("")
+  const [status, setStatus] = useState("");
   // Khởi tạo Twilio Device
 
   useEffect(() => {
-    const backend_url = process.env.NEXT_PUBLIC_BACKEND_URL || ""
     const init = async () => {
       const res = await axios.get(`${backend_url}/token`);
 
@@ -98,6 +99,20 @@ export default function DialPad() {
   };
 
   const makeCall = async () => {
+    const realPhone = country.code + phoneNumber;
+
+    const isValid = await fetch(`${backend_url}/valid-phone`, {
+      method: "POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({ phoneNumber:realPhone }),
+    });
+    const isValidResp = await isValid.json();
+    if (isValidResp.status == 401) {
+      toast("the phone is not valid");
+      return;
+    }
     const data = await fetch("/api/balance", {
       method: "POST",
       body: JSON.stringify({ userEmail: user?.mail }),
@@ -117,7 +132,6 @@ export default function DialPad() {
       return;
     }
     if (device && phoneNumber) {
-      const realPhone = country.code + phoneNumber;
       console.log("call in ", realPhone);
 
       const params = { To: realPhone, userId: user?.mail ?? "" };
@@ -137,7 +151,7 @@ export default function DialPad() {
       callInstance.on("error", (error) => {
         console.error("Call error ❌", error);
         setStatus("failed");
-        setCall(null)
+        setCall(null);
         alert(error.message);
       });
 
@@ -145,7 +159,7 @@ export default function DialPad() {
       callInstance.on("disconnect", () => {
         console.log("Call ended 📞");
         setStatus("ended");
-        setCall(null)
+        setCall(null);
       });
 
       // 🔥 RINGING EVENT

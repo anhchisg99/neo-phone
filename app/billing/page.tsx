@@ -3,6 +3,8 @@ import CreditCard from "./CreditCard";
 import { redirect } from 'next/navigation'
 import { authConfig } from "@/lib/auth";
 
+
+
 export default async function Billing() {
             const session = await getServerSession(authConfig)
             console.log('session: ',session);

@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { transferMoney } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 const amounts = [
   { value: 5 },
@@ -13,6 +16,7 @@ const amounts = [
 ];
 
 export default function CreditCard() {
+  const router = useRouter();
   const [selected, setSelected] = useState<number>(20);
   const [custom, setCustom] = useState<string>("");
 
@@ -118,7 +122,7 @@ export default function CreditCard() {
       </div>
 
       {/* Checkout */}
-      <Link
+      <Link 
         href={{
           pathname: "/checkout",
           query: {
@@ -130,7 +134,10 @@ export default function CreditCard() {
           Checkout 2
         </button> */}
       </Link>
-      <button className="mt-6 w-full h-14 bg-green-400 text-black font-bold rounded-xl text-lg hover:opacity-90 transition cursor-pointer"
+      <div className="mb-10"></div>
+
+      {/* <button
+        className="mt-6 w-full h-14 bg-green-400 text-black font-bold rounded-xl text-lg hover:opacity-90 transition cursor-pointer"
         onClick={async () => {
           const res = await fetch("/api/checkout", {
             method: "POST",
@@ -142,7 +149,37 @@ export default function CreditCard() {
         }}
       >
         Pay with Stripe
-      </button>
+      </button> */}
+      <PayPalScriptProvider
+        options={{
+          clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
+          currency: "USD",
+          intent: "capture",
+        }}
+      >
+        <div className="">
+          <PayPalButtons
+            createOrder={async () => {
+              const res = await fetch("/api/paypalcheckout", {
+                method: "POST",
+                body: JSON.stringify({ amount: selected }),
+              });
+              const order = await res.json();
+              return order.id;
+            }}
+            onApprove={async (data) => {
+              const res = await fetch("/api/capture", {
+                method: "POST",
+                body: JSON.stringify({ orderID: data.orderID }),
+              });
+              const details = await res.json();
+              if (details.status === "COMPLETED") {
+                router.push("/success_payment");
+              }
+            }}
+          />
+        </div>
+      </PayPalScriptProvider>
 
       {/* Guarantee */}
       <div className="mt-4 text-center text-green-400 text-sm border border-green-800 bg-[#112b23] py-2 rounded-full">

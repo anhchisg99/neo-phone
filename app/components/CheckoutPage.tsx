@@ -60,12 +60,13 @@ export default function CheckoutPage({ amount }: { amount: number }) {
       confirmParams: {
         return_url: return_url ,
       },
-    });
+    }); 
     if (error) {
       setErrorMessage(error.message);
     } else {
       //
       const newAmount = transferMoney(amount)
+
       await saveToDb(newAmount)
     }
     setLoading(false);

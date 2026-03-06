@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ message: "fail to select" }, { status: 404 });
   }
-  const ratePerMinute = 100; // VND
+  const ratePerMinute = 25; // VND
   const minRequired = ratePerMinute * 1; // yêu cầu tối thiểu 1 phút
   if (user.balance < minRequired) {
     return NextResponse.json({ message: false }, { status: 200 });

@@ -103,16 +103,17 @@ export default function DialPad() {
 
     const isValid = await fetch(`${backend_url}/valid-phone`, {
       method: "POST",
-      headers:{
-        "Content-Type":"application/json"
+      headers: {
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ phoneNumber:realPhone }),
+      body: JSON.stringify({ phoneNumber: realPhone }),
     });
     const isValidResp = await isValid.json();
     if (isValidResp.status == 401) {
       toast("the phone is not valid");
       return;
     }
+
     const data = await fetch("/api/balance", {
       method: "POST",
       body: JSON.stringify({ userEmail: user?.mail }),
@@ -178,12 +179,18 @@ export default function DialPad() {
     }
   };
   const countries = [
-    { name: "USA", flag: "🇺🇸", code: "+1" },
-    { name: "Vietnam", flag: "🇻🇳", code: "+84" },
-    { name: "UK", flag: "🇬🇧", code: "+44" },
-    { name: "Japan", flag: "🇯🇵", code: "+81" },
-  ];
-
+  { name: "USA", flag: "🇺🇸", code: "+1" },
+  { name: "United Kingdom", flag: "🇬🇧", code: "+44" },
+  { name: "Canada", flag: "🇨🇦", code: "+1" },
+  { name: "Australia", flag: "🇦🇺", code: "+61" },
+  { name: "Germany", flag: "🇩🇪", code: "+49" },
+  { name: "Netherlands", flag: "🇳🇱", code: "+31" },
+  { name: "Sweden", flag: "🇸🇪", code: "+46" },
+  { name: "Norway", flag: "🇳🇴", code: "+47" },
+  { name: "India", flag: "🇮🇳", code: "+91" },
+  { name: "Brazil", flag: "🇧🇷", code: "+55" },
+  { name: "Vietnam", flag: "🇻🇳", code: "+84" },
+];
   const keys = [
     { num: "1", sub: "" },
     { num: "2", sub: "ABC" },
